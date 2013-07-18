@@ -10,9 +10,6 @@ SCREEN_HEIGHT = 480
 WIDGET_WIDTH = WIDGET_HEIGHT = 32
 DROP_X = 3
 DROP_Y = 0
-#icon_arr = [None for z in range(7)]
-#for z in range(1, 8):
-#    icon_arr[z-1] = pygame.image.load("icons/"+str(z)+".png")
 icon_arr = [pygame.image.load("icons/"+str(z+1)+".png") for z in range(7)]
 
 ##### Class declarations #####
@@ -23,6 +20,7 @@ class Widget:
         self.loc_x = DROP_X
         self.loc_y = DROP_Y
         self.active = 1
+        self.delete = 0
         self.sprite = icon_arr[self.number - 1]
         self.draw(screen)
 
@@ -56,13 +54,66 @@ class Widget:
             self.draw(screen)
             self.active = 0
             return True
+
+    def mark(self, screen, board):
+        self.delete = 1
+        self.clear()
 # end Widget class
 
 class Board:
     arr = [[None for x in range(7)] for y in range(8)]
 
+    def check_cell(self, x, y):
+        if self.arr[y][x] == None:
+            return False
+        length = 1
+
+        # Check horizontal
+        i = x - 1
+        while i >= 0 and self.arr[y][i] != None:
+            length += 1
+            i -= 1
+        i = x + 1
+        while i <= 6 and self.arr[y][i] != None:
+            length += 1
+            i += 1
+        if length == self.arr[y][x].number:
+            self.arr[y][x].mark
+            return True
+
+        # Check vertical
+        i = y - 1
+        length = 0
+        while i >= 1 and self.arr[i][x] != None:
+            length += 1
+            i -= 1
+        i = y + 1
+        while i <= 7 and self.arr[i][x] != None:
+            length += 1
+            i += 1
+        if length == self.arr[y][x].number:
+            self.arr[y][x].mark
+            return True
+        return False
+
+    def clean(self):
+        boardChanged = False
+        for x in range(7):
+            for y in range(1, 8):
+                if self.arr[y][x] != None and self.arr[y][x].delete == 1:
+                    boardChanged = True
+                    self.arr[y][x] = None
+        #if boardChanged == True
+        
+
     def check(self):
-        # TODO: Add row/column checks here
+        boardChanged = False
+        for x in range(7):
+            for y in range(1, 8):
+                if self.check_cell(x, y) == True:
+                    boardChanged = True
+        if boardChanged == True:
+            self.clean()
 # end Board class
 
 ##### Game stuff #####
@@ -91,9 +142,9 @@ while 1:
         elif event.key == K_DOWN:
             if one_widget.drop(screen, board) == True:
                 one_widget = Widget(screen)
+                board.check()
         elif event.key == K_ESCAPE: 
             sys.exit(0)
 
     # Rendering
-#    screen.fill(BLACK)
     pygame.display.flip()
