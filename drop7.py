@@ -56,8 +56,9 @@ class Widget:
             return True
 
     def mark(self, screen, board):
+        print "Marking: " + str(self.number)
         self.delete = 1
-        self.clear()
+        self.clear(screen)
 # end Widget class
 
 class Board:
@@ -66,9 +67,9 @@ class Board:
     def check_cell(self, x, y):
         if self.arr[y][x] == None:
             return False
-        length = 1
 
         # Check horizontal
+        length = 1
         i = x - 1
         while i >= 0 and self.arr[y][i] != None:
             length += 1
@@ -78,12 +79,12 @@ class Board:
             length += 1
             i += 1
         if length == self.arr[y][x].number:
-            self.arr[y][x].mark
+            self.arr[y][x].mark(screen, board)
             return True
 
         # Check vertical
         i = y - 1
-        length = 0
+        length = 1
         while i >= 1 and self.arr[i][x] != None:
             length += 1
             i -= 1
@@ -92,7 +93,7 @@ class Board:
             length += 1
             i += 1
         if length == self.arr[y][x].number:
-            self.arr[y][x].mark
+            self.arr[y][x].mark(screen, board)
             return True
         return False
 
@@ -114,6 +115,7 @@ class Board:
                     boardChanged = True
         if boardChanged == True:
             self.clean()
+        print ""
 # end Board class
 
 ##### Game stuff #####
@@ -143,7 +145,7 @@ while 1:
             if one_widget.drop(screen, board) == True:
                 one_widget = Widget(screen)
                 board.check()
-        elif event.key == K_ESCAPE: 
+        elif event.key == K_ESCAPE or event.key == K_q: 
             sys.exit(0)
 
     # Rendering
