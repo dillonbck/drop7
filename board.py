@@ -1,8 +1,10 @@
 """
-The docstring for a module should generally list the classes, exceptions and 
-functions (and any other objects) that are exported by the module, with a 
-one-line summary of each. (These summaries generally give less detail than the 
-summary line in the object's docstring.)
+File: board.py
+Author: Dillon Beck
+
+Classes:
+    Board: Manages widgets on the board and level up and scoring.
+
 """
 import logging
 import pygame
@@ -15,23 +17,23 @@ from widget import Widget
 LOGGER = logging.getLogger(__name__)
 
 class Board(object):
-    """Summary of class here.
-
-    Longer class info...
-    Longer class info...
+    """Board class that manages dropping, breaking, and removing widgets and 
+        level up and scoring mechanics.
 
     Attribute:
-        attribute: A boolean attribute explanation.
+        arr: Two dimensional array representing the board containing widgets. 
+        widget_count: Int representing number of widgets on the board.
+
     """
 
 
     def __init__(self):
+        """Initialize empty board."""
 
         self.arr = [[None for x in range(7)] for y in range(7)]
-
         self.widget_count = 0
 
-    # Check to see if the widget at the specified location will be destroyed
+
     def check_cell(self, x_loc, y_loc):
         """Check if the widget at specified location will be destroyed.
 
@@ -108,9 +110,6 @@ class Board(object):
             x_loc: X (column) location to check adjacent.
             y_loc: Y (row) location to check adjacent. 
 
-        Returns:
-            Returns nothing.
-
         """
 
         if x_loc >= 1:
@@ -133,19 +132,19 @@ class Board(object):
 
 
     def drop(self, widget):
-        """One line summary.
+        """Drop the active widget down its current column until it lands.
 
-        Extended method summary.
+        The active widget (next widget being controlled by the user to be 
+        dropped) is dropped down the column where it currently resides until it
+        lands.
+        If the widget can not be dropped in the current column (column is full),
+        this method will return false.
 
         Args:
-            argument: Explanation.
+            widget: The widget being dropped.
 
         Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+            A boolean indicating whether the widget was dropped.
 
         """
 
@@ -178,47 +177,42 @@ class Board(object):
 
 
     def scoot(self):
-        """One line summary.
+        """Find all floating widgets and drop them to their final resting place.
 
-        Extended method summary.
-
-        Args:
-            argument: Explanation.
+        Starting with the bottom row, find any widget with an empty space below
+        it and move it down until there is no empty space below it.  Repeat 
+        until no widgets have an empty space below.
 
         Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+            A boolean indicating whether the board changed from this operation.
 
         """
 
         board_changed = False
-        for x in range(7):
-            for y in reversed(range(6)):
-                widget = self.arr[y][x]
-                next_spot = self.arr[y+1][x]
-                y_copy = y
+        for row in range(7):
+            for column in reversed(range(6)):
+                widget = self.arr[column][row]
+                next_spot = self.arr[column+1][row]
+                column_copy = column 
 
-                while widget != None and next_spot == None and y_copy <= 5:
+                while widget != None and next_spot == None and column_copy <= 5:
                     
-                    my_widget = self.arr[y_copy][x]
+                    my_widget = self.arr[column_copy][row]
                     #my_widget.clear()
 
                     #pygame.time.wait(200)
 
                     my_widget.loc_y += 1
-                    self.arr[y_copy + 1][x] = my_widget 
-                    self.arr[y_copy][x] = None
+                    self.arr[column_copy + 1][row] = my_widget 
+                    self.arr[column_copy][row] = None
                     #my_widget.draw()
                     my_widget.redraw(prev_y=my_widget.loc_y-1)
                     board_changed = True
                     
-                    widget = self.arr[y_copy+1]
-                    if y_copy+2 <= 6:
-                        next_spot = self.arr[y_copy+2][x]
-                    y_copy += 1
+                    widget = self.arr[column_copy+1]
+                    if column_copy+2 <= 6:
+                        next_spot = self.arr[column_copy+2][row]
+                    column_copy += 1
 
                     
 
@@ -226,35 +220,29 @@ class Board(object):
             if config.use_gui:
                 pygame.time.wait(100)
             self.scoot()
-            return True
-        else:
-            return False
-        #returnboard_changed 
+
+        return board_changed
 
 
     def clean(self):
-        """One line summary.
+        """Remove all widgets marked for deletion from the board and score.
 
-        Extended method summary.
-
-        Args:
-            argument: Explanation.
+        Iterate through each spot on the board and find all widgets marked for
+        deletion.  Remove them from the board and score points for them.
 
         Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+            A boolean indicating whether the board has changed.
 
         """
 
         board_changed = False
-        for x in range(7):
-            for y in range(7):
-                if self.arr[y][x] != None and self.arr[y][x].delete == 1:
+        for row in range(7):
+            for column in range(7):
+                if (self.arr[column][row] != None and 
+                        self.arr[column][row].delete == 1):
+
+                    # TODO: Should board be handling the scoring?
                     if config.combo_modifier > 0:
-                        
                         LOGGER.debug("Combo %d\n\tScore += %d", 
                                      config.combo_modifier, 
                                      config.combo_list[config.combo_modifier])
@@ -262,51 +250,52 @@ class Board(object):
                     config.score += config.combo_list[config.combo_modifier]
 
                     board_changed = True
-                    self.arr[y][x].clear()
-                    self.arr[y][x] = None
+                    self.arr[column][row].clear()
+                    self.arr[column][row] = None
                     if config.use_gui:
                         pygame.time.wait(200)
 
         if board_changed:
             config.combo_modifier += 1
+
         return board_changed 
     
 
 
     def check(self):
-        """One line summary.
+        """Remove any deleted widgets and move widgets until board is stable.
 
-        Extended method summary.
-
-        Args:
-            argument: Explanation.
-
-        Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+        Iterate through each board spot and remove any deleted widgets.
+        Check if any widgets are floating and drop them until no widgets are 
+        floating.
+        This method will repeat until a stable state (no widgets floating and
+        all deleted widgets removed) is reached. 
 
         """
 
         board_changed = False
 
         # Check each cell to see if the widget will be destroyed
-        for x in range(7):
-            for y in range(7):
-                if self.check_cell(x, y) == True:
+        for row in range(7):
+            for column in range(7):
+                if self.check_cell(row, column) == True:
                     board_changed = True
 
         if config.use_gui:
             pygame.time.wait(10)
+
+        # check if removing deleted widgets changes the board
         if self.clean() == True:
             board_changed = True
+
         if config.use_gui:
             pygame.time.wait(10)
+
+        # check if scooting the board changes the board
         if self.scoot() == True:
             board_changed = True
 
+        # rerun to make sure the board is in a stable state
         if board_changed == True:
             self.check()
 
@@ -316,59 +305,49 @@ class Board(object):
 
             
     def add_unbroken_row(self):
-        """One line summary.
+        """Move all widgets up 1 row and fill bottom row with unbroken widgets.
 
-        Extended method summary.
+        All widgets are moved up 1 row and the bottom row is filled with 
+        unbroken widgets.
 
-        Args:
-            argument: Explanation.
-
-        Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+        No check is made to see if the board will overflow (top row moves off
+        the board), so this method assumes a check is made beforehand.
+        #TODO: This should have the check internal...
 
         """
 
-        for x in range(7):
-            for y in range(7):
-                widget = self.arr[y][x]
+        for row in range(7):
+            for column in range(7):
+                widget = self.arr[column][row]
 
                 if widget is not None:
-                    next_spot = self.arr[y-1][x]
                     #widget.clear()
                     widget.loc_y -= 1
-                    self.arr[y-1][x] = widget
-                    self.arr[y][x] = None
+                    self.arr[column-1][row] = widget
+                    self.arr[column][row] = None
                     #widget.draw()
                     widget.redraw(prev_y=widget.loc_y+1)
 
-        for x in range(7):
-            widget = Widget(True, x, 6)
-            self.arr[6][x] = widget
+        for row in range(7):
+            widget = Widget(True, row, 6)
+            self.arr[6][row] = widget
 
         self.print_board()
         #pygame.display.flip()
         self.check()
         self.widget_count += 7
 
-
     def level_check(self):
-        """One line summary.
+        """Check if the next level has been reached.
 
-        Extended method summary.
-
-        Args:
-            argument: Explanation.
-
-        Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+        Decrement the number of widgets remaining to complete the current level,
+        and if the number of remaining widgets for the level is 0, increment
+        to the next level.
+        Each level requires 1 less widget to be dropped to reach the next level.
+        The number of widgets needed to be dropped to reach the next level can
+        only be decremented to a specified number - no less than this number of 
+        widgets will ever be required to reach the next level.
+        # TODO: Should board handle level stuff?
 
         """
 
@@ -385,33 +364,34 @@ class Board(object):
             self.check_game_over(row_add=True)
             self.add_unbroken_row()
 
-
     def check_game_over(self, row_add=False):
-        """One line summary.
+        """Check conditions for the game to end.
 
-        Extended method summary.
+        Check the two conditions for which the game will end.
+        If the entire top row is full, no more widgets can be dropped and the 
+        game is over.
+        If a new row of unbroken widgets is about to be added (level up) and 
+        there is a widget in the top row of the board (that will overflow on the
+        level up), the game is over.
+        Sets config.game_over to indicate game is over.
+        # TODO: Should board handle level stuff?
 
         Args:
-            argument: Explanation.
-
-        Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+            row_add: Boolean indicating whether this game over check should 
+                consider that a row of widgets is about to be added to the 
+                bottom row and all other widgets are being pushed up.
 
         """
 
         if row_add:
-            for x in range(7):
-                if self.arr[0][x] is not None:
+            for row in range(7):
+                if self.arr[0][row] is not None:
                     config.game_over = True
         
         elif not row_add:
             top_row_full = True
-            for x in range(7):
-                if self.arr[0][x] is None:
+            for row in range(7):
+                if self.arr[0][row] is None:
                     top_row_full = False
 
             if top_row_full:
@@ -425,28 +405,20 @@ class Board(object):
 
 
     def print_board(self):
-        """One line summary.
+        """Print out a text representation of the board's current status.
 
-        Extended method summary.
-
-        Args:
-            argument: Explanation.
-
-        Returns:
-            Explanation.
-            Example:
-
-        Raises:
-            Errorname: Explanation
+        Log debug messages that show the current widget numbers occupying each
+        spot.
 
         """
 
         for row in self.arr:
             for val in row:
                 if val is not None:
-                    LOGGER.debug('{:4}'.format(val.number))
+                    LOGGER.debug("%4d", val.number)
+                    #LOGGER.debug('{:4}'.format(val.number))
                     #print '{:4}'.format(val.number),
                 else:
-                    LOGGER.debug('{:4}'.format(0))
+                    LOGGER.debug("%4d", 0)
+                    #LOGGER.debug('{:4}'.format(0))
                     #print '{:4}'.format(0),
-# end Board class
