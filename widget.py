@@ -64,17 +64,6 @@ class Widget:
 
             pygame.display.flip()
 
-    def redraw(self, prev_x=None, prev_y=None, prev_active=None):
-        if prev_x is None:
-            prev_x = self.loc_x
-        if prev_y is None:
-            prev_y = self.loc_y
-        if prev_active is None:
-            prev_active = self.active
-
-        if config.use_gui:
-            config.gui.clear_widget(prev_active, prev_x, prev_y)
-            config.gui.draw_widget(self.sprite, self.active, self.loc_x, self.loc_y)
 
     def right(self):
         if self.loc_x < 6 and self.active == 1:
@@ -82,7 +71,8 @@ class Widget:
             #self.clear()
             self.loc_x += 1
             #self.draw()
-            self.redraw(prev_x=self.loc_x-1)
+            
+            # self.redraw(prev_x=self.loc_x-1)
 
     def left(self):
         if self.loc_x >= 1 and self.active == 1:
@@ -90,7 +80,7 @@ class Widget:
             self.loc_x -= 1
             #self.draw()
 
-            self.redraw(prev_x=self.loc_x+1)
+            # self.redraw(prev_x=self.loc_x+1)
     
 
     # Mark a cell to be deleted

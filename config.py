@@ -22,36 +22,35 @@ def init():
     global use_gui
     use_gui = False 
 
-    if use_gui:
-        global SCREEN_WIDTH, SCREEN_HEIGHT
-        SCREEN_WIDTH = 640
-        SCREEN_HEIGHT = 480
+    global SCREEN_WIDTH, SCREEN_HEIGHT
+    SCREEN_WIDTH = 640
+    SCREEN_HEIGHT = 480
 
-        global WIDGET_WIDTH, WIDGET_HEIGHT
-        WIDGET_WIDTH = WIDGET_HEIGHT = 32
+    global WIDGET_WIDTH, WIDGET_HEIGHT
+    WIDGET_WIDTH = WIDGET_HEIGHT = 32
 
-        global screen
-        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), DOUBLEBUF)
+    global screen
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), DOUBLEBUF)
 
-        global background
-        background = pygame.Surface(screen.get_size())
-
-
-        global icon_arr
-        icon_arr = [pygame.image.load("icons/"+str(z+1)+".png") for z in range(7)]
-        icon_arr.append(pygame.image.load("icons/unbroken.png"))
-        icon_arr.append(pygame.image.load("icons/cracked.png"))
-
-        global font
-        font = pygame.font.Font(None, 12)
-
-        global BLACK, WHITE
-        BLACK = (0, 0, 0)
-        WHITE = (255, 255, 255)
+    global background
+    background = pygame.Surface(screen.get_size())
 
 
-        global gui
-        gui = Gui()
+    global icon_arr
+    icon_arr = [pygame.image.load("icons/"+str(z+1)+".png") for z in range(7)]
+    icon_arr.append(pygame.image.load("icons/unbroken.png"))
+    icon_arr.append(pygame.image.load("icons/cracked.png"))
+
+    # global font
+    # font = pygame.font.Font(None, 12)
+
+    global BLACK, WHITE
+    BLACK = (0, 0, 0)
+    WHITE = (255, 255, 255)
+
+
+    global gui
+    gui = Gui()
 
 
     global BASE_LEVEL_WIDGET_COUNT, MINIMUM_LEVEL_WIDGET_COUNT

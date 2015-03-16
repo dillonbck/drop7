@@ -31,12 +31,19 @@ class Keyboard(object):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.evManager.Post(QuitEvent())
+
                     elif event.key == pygame.K_LEFT:
-                        self.evManager.Post(LeftEvent())
+                        # self.evManager.Post(LeftEvent())
+                        self.evManager.Post(MoveEvent(MoveEvent.DIR_LEFT))
+
                     elif event.key == pygame.K_RIGHT:
-                        self.evManager.Post(RightEvent())
+                        # self.evManager.Post(RightEvent())
+                        self.evManager.Post(MoveEvent(MoveEvent.DIR_RIGHT))
+
                     elif event.key == pygame.K_DOWN:
-                        self.evManager.Post(DownEvent())
+                        # self.evManager.Post(DownEvent())
+                        self.evManager.Post(MoveEvent(MoveEvent.DIR_DOWN))
+                        
                     else:
                         # post any other keys to the message queue for everyone else to see
                         self.evManager.Post(InputEvent(event.unicode, None))

@@ -3,6 +3,7 @@ from eventmanager import *
 
 from board import Board
 from widget import Widget
+import config
 
 class GameEngine(object):
     """
@@ -32,17 +33,29 @@ class GameEngine(object):
         if isinstance(event, QuitEvent):
             self.running = False
 
-        elif isinstance(event, LeftEvent):
-            # move widget left
-            self.active_widget.left()
 
-        elif isinstance(event, RightEvent):
-            # move widget right
-            self.active_widget.right()
+        elif isinstance(event, MoveEvent):
+            move_event = WidgetMoveEvent()
+            move_event.prev_x = self.active_widget.loc_x
+            move_event.prev_active = self.active_widget.active
 
-        elif isinstance(event, DownEvent):
-            # drop widget
-            self.board.drop(self.active_widget)
+            if event.direction == MoveEvent.DIR_LEFT:
+                self.active_widget.left()
+            elif event.direction == MoveEvent.DIR_RIGHT:
+                self.active_widget.right()
+            elif event.direction == MoveEvent.DIR_DOWN:
+                pass
+
+            move_event.cur_x = self.active_widget.loc_x
+            move_event.prev_y = config.DROP_Y
+            move_event.cur_y = config.DROP_Y
+            move_event.cur_active = self.active_widget.active
+            if config.use_gui:
+                move_event.sprite = self.active_widget.sprite
+
+            self.evManager.Post(move_event)
+
+
 
     def run(self):
         """

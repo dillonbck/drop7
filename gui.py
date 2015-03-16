@@ -47,30 +47,5 @@ class Gui():
         config.screen.blit(text, textpos)
 
 
-    @staticmethod
-    def clear_widget(active_widget, loc_x, loc_y):
-        if active_widget:
-            y = loc_y+1
-        else:
-            y = loc_y+2
-
-        # if active_widget:
-        #     box = pygame.Rect(loc_x * config.WIDGET_WIDTH, (loc_y+1) * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
-
-        # else:
-        #     box = pygame.Rect(loc_x * config.WIDGET_WIDTH, (loc_y+2) * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
-        
-        box = pygame.Rect(loc_x * config.WIDGET_WIDTH, y * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
-        pygame.draw.rect(config.screen, config.BLACK, box, 0)
-
-
-
-    @staticmethod
-    def draw_widget(sprite, active_widget, loc_x, loc_y):
-        if active_widget:
-            config.screen.blit(sprite, (loc_x * config.WIDGET_WIDTH, (loc_y+1) * config.WIDGET_HEIGHT))
-        else:
-            config.screen.blit(sprite, (loc_x * config.WIDGET_WIDTH, (loc_y+2) * config.WIDGET_HEIGHT))
-
 
 

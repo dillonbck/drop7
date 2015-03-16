@@ -28,32 +28,35 @@ class TickEvent(Event):
         self.name = "Tick event"
 
 
-class LeftEvent(Event):
+class MoveEvent(Event):
     """
-    Left event.
+    Any movement event (left, right, down).
     """
+    DIR_DOWN = 0
+    DIR_LEFT = -1
+    DIR_RIGHT = 1
 
-    def __init__(self):
-        self.name = "Left event"
+    def __init__(self, direction):
+        self.direction = direction
+        self.name = "Move event"
 
 
-class RightEvent(Event):
+
+class WidgetMoveEvent(Event):
     """
-    Right event.
-    """
-
-    def __init__(self):
-        self.name = "Right event"
-
-
-class DownEvent(Event):
-    """
-    Down event.
+    Event for when a widget has moved.
     """
 
     def __init__(self):
-        self.name = "Down event"
-        
+        self.name = "Widget move event"
+        self.prev_x = None
+        self.cur_x = None
+        self.prev_y = None
+        self.cur_y = None
+        self.prev_active = None
+        self.cur_active = None
+        self.sprite = None
+
 
 class InputEvent(Event):
     """
