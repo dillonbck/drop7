@@ -50,6 +50,9 @@ class GameEngine(object):
             move_event.prev_y = config.DROP_Y
             move_event.cur_y = config.DROP_Y
             move_event.cur_active = self.active_widget.active
+            move_event.state = self.active_widget.state
+            move_event.number = self.active_widget.number
+
             if config.use_gui:
                 move_event.sprite = self.active_widget.sprite
 

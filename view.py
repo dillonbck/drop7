@@ -2,6 +2,7 @@ import pygame
 import model
 from eventmanager import *
 import config
+from widget import Widget
 
 class GraphicalView(object):
     """
@@ -27,6 +28,7 @@ class GraphicalView(object):
         self.screen = None
         self.clock = None
         self.smallfont = None
+        self.dirty_rects = []
 
     def notify(self, event):
         """
@@ -35,7 +37,7 @@ class GraphicalView(object):
 
         if isinstance(event, InitializeEvent):
             self.initialize()
-            
+
         elif isinstance(event, QuitEvent):
             # shut down the pygame graphics
             self.isinitialized = False
@@ -53,11 +55,10 @@ class GraphicalView(object):
             cur_y = event.cur_y
             prev_active = event.prev_active
             cur_active = event.cur_active
-            if config.use_gui:
-                sprite = event.sprite
-                self.redraw(prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, sprite)
-            else:
-                self.redraw(prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, None)
+            state = event.state
+            number = event.number
+
+            self.redraw(prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, state, number)
 
 
     def renderall(self):
@@ -94,9 +95,9 @@ class GraphicalView(object):
 
 
 
-    def redraw(self, prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, sprite):
+    def redraw(self, prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, state, number):
         self.clear_widget(prev_active, prev_x, prev_y)
-        self.draw_widget(sprite, cur_active, cur_x, cur_y)
+        self.draw_widget(cur_active, cur_x, cur_y, state, number)
 
 
     # def redraw(self, prev_x=None, prev_y=None, prev_active=None):
@@ -119,14 +120,41 @@ class GraphicalView(object):
             y = loc_y+2
 
         box = pygame.Rect(loc_x * config.WIDGET_WIDTH, y * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
-        #pygame.draw.rect(config.screen, config.BLACK, box, 0)
+        pygame.draw.rect(config.screen, config.BLACK, box, 0)
+        self.dirty_rects.append(box)
 
 
 
-    def draw_widget(self, sprite, active_widget, loc_x, loc_y):
+    def draw_widget(self, active_widget, loc_x, loc_y, state, number):
         # if active_widget:
         #     config.screen.blit(sprite, (loc_x * config.WIDGET_WIDTH, (loc_y+1) * config.WIDGET_HEIGHT))
         # else:
         #     config.screen.blit(sprite, (loc_x * config.WIDGET_WIDTH, (loc_y+2) * config.WIDGET_HEIGHT))
-        pass
 
+        if active_widget:
+            y_modifier = 1
+        else:
+            y_modifier = 2
+
+        sprite = self.find_widget_sprite(state, number)
+        loc = (loc_x * config.WIDGET_WIDTH, (loc_y+y_modifier) * config.WIDGET_HEIGHT)
+
+        config.screen.blit(sprite, loc)
+
+
+
+        size = (config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
+        box = pygame.Rect(loc, size)
+        self.dirty_rects.append(box)
+
+
+    def find_widget_sprite(self, state, number):
+        if state == Widget.UNBROKEN:
+            sprite = config.icon_arr[7]
+        elif state == Widget.CRACKED:
+            sprite = config.icon_arr[8]
+        elif state == Widget.BROKEN:
+            sprite = config.icon_arr[number - 1]
+
+        return sprite
+        

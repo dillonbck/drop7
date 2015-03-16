@@ -8,20 +8,23 @@ import config
 logger = logging.getLogger(__name__)
 
 class Widget:
+
+    UNBROKEN = 2
+    CRACKED = 1
+    BROKEN = 0
+
     def __init__(self, unbroken=False, x=0, y=0):
         self.number = randint(1,7)
         #self.number = 2
         if unbroken or (randint(1,8) == 8):    # mostly broken
-        #if unbroken or (randint(1,8) > 9):     # all unbroken
-        #if (randint(1,8) > 2):     # mostly unbroken
-            self.unbroken = True
-            self.cracked = False
+            self.state = Widget.UNBROKEN
+
             if config.use_gui:
                 self.sprite = config.icon_arr[7]
             #self.number = 4
         else:
-            self.unbroken = False
-            self.cracked = False
+            self.state = Widget.BROKEN
+            
             if config.use_gui:
                 self.sprite = config.icon_arr[self.number - 1]
             #color = self.sprite.get_at((0,0))
@@ -71,7 +74,7 @@ class Widget:
             #self.clear()
             self.loc_x += 1
             #self.draw()
-            
+
             # self.redraw(prev_x=self.loc_x-1)
 
     def left(self):
@@ -92,24 +95,40 @@ class Widget:
             pygame.time.wait(100)
 
 
+    # def check_break(self):
+    #     new_sprite = None
+
+    #     if  self.cracked == True:
+    #         self.cracked = False
+    #         if config.use_gui:
+    #             new_sprite = config.icon_arr[self.number - 1]
+    #         #self.sprite = config.icon_arr[self.number - 1]
+    #         #self.draw()
+    #     if self.unbroken == True:
+    #         self.unbroken = False
+    #         self.cracked = True
+    #         if config.use_gui:
+    #             new_sprite = config.icon_arr[8]
+    #         #self.sprite = config.icon_arr[8]
+    #         #self.draw()
+
+    #     if config.use_gui:
+    #         if new_sprite is not None:
+    #             self.sprite = new_sprite
+    #             self.draw()
+
+
     def check_break(self):
-        new_sprite = None
 
-        if  self.cracked == True:
-            self.cracked = False
-            if config.use_gui:
-                new_sprite = config.icon_arr[self.number - 1]
-            #self.sprite = config.icon_arr[self.number - 1]
-            #self.draw()
-        if self.unbroken == True:
-            self.unbroken = False
-            self.cracked = True
-            if config.use_gui:
-                new_sprite = config.icon_arr[8]
-            #self.sprite = config.icon_arr[8]
-            #self.draw()
+        if self.state == Widget.CRACKED:
+            self.state = Widget.BROKEN
 
-        if config.use_gui:
-            if new_sprite is not None:
-                self.sprite = new_sprite
-                self.draw()
+        if self.state == Widget.UNBROKEN:
+            self.state = Widget.CRACKED
+
+        # if  self.cracked == True:
+        #     self.cracked = False
+
+        # if self.unbroken == True:
+        #     self.unbroken = False
+        #     self.cracked = True

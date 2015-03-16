@@ -55,7 +55,8 @@ class WidgetMoveEvent(Event):
         self.cur_y = None
         self.prev_active = None
         self.cur_active = None
-        self.sprite = None
+        self.state = None
+        self.number = None
 
 
 class InputEvent(Event):
