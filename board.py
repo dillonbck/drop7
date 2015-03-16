@@ -93,20 +93,12 @@ class Board:
                 widget.loc_y += 1         # Move down 1 spot
                 #self.draw()       # Redraw screen
 
-                widget.redraw(prev_y=widget.loc_y-1)
-
-                if config.use_gui:  
-                    pygame.time.wait(100)   
 
             self.arr[widget.loc_y][widget.loc_x] = widget    # Lock in the widget's position
             #self.clear()
-            prev_active = widget.active
             widget.active = 0     # Widget is now inactive
             #self.draw()       # Redraw screen
-            widget.redraw(prev_active=prev_active)
 
-            if config.use_gui:
-                pygame.time.wait(10)   
             return True
 
 
@@ -263,9 +255,10 @@ class Board:
         for row in self.arr:
             for val in row:
                 if val is not None:
-                    logger.debug('{:4}'.format(val.number))
-                    #print '{:4}'.format(val.number),
+                    #logger.debug('{:4}'.format(val.number))
+                    print '{:4}'.format(val.number),
                 else:
-                    logger.debug('{:4}'.format(0))
-                    #print '{:4}'.format(0),
+                    #logger.debug('{:4}'.format(0))
+                    print '{:4}'.format(0),
+            print "\n"
 # end Board class

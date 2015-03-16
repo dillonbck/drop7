@@ -10,8 +10,8 @@ from gui import Gui
 # logging.WARNING
 # logging.ERROR
 # logging.CRITICAL
-#LOG_LEVEL = logging.DEBUG
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
+#LOG_LEVEL = logging.INFO
 
 logging.basicConfig(format='%(name)s: %(levelname)s: %(message)s', level=LOG_LEVEL) 
 

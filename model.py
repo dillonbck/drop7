@@ -37,6 +37,7 @@ class GameEngine(object):
         elif isinstance(event, MoveEvent):
             move_event = WidgetMoveEvent()
             move_event.prev_x = self.active_widget.loc_x
+            move_event.prev_y = self.active_widget.loc_y
             move_event.prev_active = self.active_widget.active
 
             if event.direction == MoveEvent.DIR_LEFT:
@@ -44,17 +45,16 @@ class GameEngine(object):
             elif event.direction == MoveEvent.DIR_RIGHT:
                 self.active_widget.right()
             elif event.direction == MoveEvent.DIR_DOWN:
-                pass
+                self.board.drop(self.active_widget)
 
             move_event.cur_x = self.active_widget.loc_x
-            move_event.prev_y = config.DROP_Y
-            move_event.cur_y = config.DROP_Y
+            move_event.cur_y = self.active_widget.loc_y
             move_event.cur_active = self.active_widget.active
             move_event.state = self.active_widget.state
             move_event.number = self.active_widget.number
 
-            if config.use_gui:
-                move_event.sprite = self.active_widget.sprite
+            if event.direction == MoveEvent.DIR_DOWN:
+                self.active_widget = Widget()
 
             self.evManager.Post(move_event)
 

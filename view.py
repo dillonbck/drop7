@@ -1,4 +1,5 @@
 import pygame
+from pygame.locals import *
 import model
 from eventmanager import *
 import config
@@ -64,21 +65,25 @@ class GraphicalView(object):
     def renderall(self):
         """
         Draw the current game state on screen.
+        Uses dirty rectangle updating - Only update screen where changes happened.
         Does nothing if isinitialized == False (pygame.init failed)
         """
 
         if not self.isinitialized:
             return
-        # clear display
-        self.screen.fill((0, 0, 0))
-        # draw some words on the screen
-        somewords = self.smallfont.render(
-                    'The View is busy drawing on your screen', 
-                    True, 
-                    (0, 255, 0))
-        self.screen.blit(somewords, (0, 0))
+        # # clear display
+        # self.screen.fill((0, 0, 0))
+        # # draw some words on the screen
+        # somewords = self.smallfont.render(
+        #             'The View is busy drawing on your screen', 
+        #             True, 
+        #             (0, 255, 0))
+        # self.screen.blit(somewords, (0, 0))
         # flip the display to show whatever we drew
-        pygame.display.flip()
+        #pygame.display.flip()
+
+        pygame.display.update(self.dirty_rects)
+        self.dirty_rects = []
 
     def initialize(self):
         """
@@ -93,6 +98,7 @@ class GraphicalView(object):
         self.smallfont = pygame.font.Font(None, 40)
         self.isinitialized = True
 
+        self.screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), DOUBLEBUF)
 
 
     def redraw(self, prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, state, number):
@@ -157,4 +163,3 @@ class GraphicalView(object):
             sprite = config.icon_arr[number - 1]
 
         return sprite
-        
