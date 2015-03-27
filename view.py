@@ -61,6 +61,18 @@ class GraphicalView(object):
 
             self.redraw(prev_x, cur_x, prev_y, cur_y, prev_active, cur_active, state, number)
 
+        elif isinstance(event, WidgetCreateEvent):
+            active_widget = event.active_widget
+            loc_x = event.loc_x
+            loc_y = event.loc_y
+            state = event.state
+            number = event.number
+
+            self.draw_widget(active_widget, loc_x, loc_y, state, number)
+
+
+            print("handling WidgetCreateEvent")
+
 
     def renderall(self):
         """

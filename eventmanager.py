@@ -41,6 +41,16 @@ class MoveEvent(Event):
         self.name = "Move event"
 
 
+class WidgetCreateEvent(Event):
+
+    def __init__(self):
+        self.name = "Widget create event"
+        self.active_widget = None
+        self.loc_x = None
+        self.loc_y = None
+        self.state = None
+        self.number = None
+
 
 class WidgetMoveEvent(Event):
     """

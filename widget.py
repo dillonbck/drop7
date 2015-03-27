@@ -1,8 +1,8 @@
 import logging
 import pygame
 from random import randint
-
 import config
+from eventmanager import *
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,9 @@ class Widget:
     CRACKED = 1
     BROKEN = 0
 
-    def __init__(self, unbroken=False, x=0, y=0):
+    def __init__(self, game_engine, unbroken=False, x=0, y=0):
+        self.game_engine = game_engine
+
         self.number = randint(1,7)
         #self.number = 2
         if unbroken or (randint(1,8) == 8):    # mostly broken
@@ -35,12 +37,21 @@ class Widget:
             self.loc_y = y
             self.active = 0
         else:
-            self.loc_x = config.DROP_X
-            self.loc_y = config.DROP_Y
+            self.loc_x = self.game_engine.DROP_X
+            self.loc_y = self.game_engine.DROP_Y
             self.active = 1
 
         self.delete = 0
         self.draw()
+
+        ev = WidgetCreateEvent()
+        ev.active_widget = self.active
+        ev.loc_x = self.loc_x
+        ev.loc_y = self.loc_y
+        ev.state = self.state
+        ev.number = self.number 
+
+        self.game_engine.evManager.Post(ev)
 
     def clear(self):
         # if self.active:

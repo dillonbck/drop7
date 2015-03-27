@@ -53,13 +53,7 @@ def init():
     gui = Gui()
 
 
-    global BASE_LEVEL_WIDGET_COUNT, MINIMUM_LEVEL_WIDGET_COUNT
-    BASE_LEVEL_WIDGET_COUNT = 30
-    MINIMUM_LEVEL_WIDGET_COUNT = 5
-
-    global DROP_X, DROP_Y
-    DROP_X = 3
-    DROP_Y = 0
+    
 
     global game_iterations, totaled_scores, highest_score, totaled_longest_combo, highest_longest_combo
     game_iterations = 100
@@ -79,6 +73,7 @@ def game_setup():
     score = 0
     longest_combo = 0
     level = 1
-    level_widgets_remaining = BASE_LEVEL_WIDGET_COUNT
+    #level_widgets_remaining = BASE_LEVEL_WIDGET_COUNT
+    level_widgets_remaining = 3
     game_over = False
     combo_list = [7, 39, 109, 224, 391, 617, 907, 1267, 1701, 2213, 2809, 3491, 4265, 5133, 6099, 7168, 8341, 9622, 11014, 12521, 14146, 15891, 17758, 19752, 21875, 24128, 26515, 29039, 31702, 34506]
