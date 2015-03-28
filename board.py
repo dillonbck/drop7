@@ -23,11 +23,6 @@ class Board:
         if self.arr[y][x] is not None and self.arr[y][x].state == Widget.BROKEN:
             logger.debug("\nnumber: %d", self.arr[y][x].number)
 
-            # If cell empty, return False
-            if self.arr[y][x] == None:
-                logger.debug("check_cell empty cell")
-                return False
-
             # Check horizontal widget removals
             length = 1
             i = x - 1
@@ -49,7 +44,7 @@ class Board:
 
                 # check if adjacent widgets are unbroken and if so crack them
                 self.check_adjacent(x, y)
-                pygame.time.wait(1000)
+                #pygame.time.wait(1000)
                 return True
 
             # Check vertical widget removals
@@ -72,10 +67,10 @@ class Board:
 
                 # check if adjacent widgets are unbroken and if so crack them
                 self.check_adjacent(x, y)
-                pygame.time.wait(1000)
+                #pygame.time.wait(1000)
                 return True
 
-            pygame.time.wait(2000)
+            pygame.time.wait(500)
             return False
 
     def check_adjacent(self, x, y):
@@ -114,6 +109,8 @@ class Board:
             #self.clear()
             widget.active = 0     # Widget is now inactive
             #self.draw()       # Redraw screen
+
+            self.widget_count += 1
 
             return True
 

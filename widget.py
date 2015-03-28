@@ -67,6 +67,14 @@ class Widget:
 
             pygame.display.flip()
 
+
+        ev = WidgetClearEvent()
+        ev.active_widget = self.active
+        ev.loc_x = self.loc_x
+        ev.loc_y = self.loc_y
+
+        self.game_engine.evManager.Post(ev)
+
     def draw(self):
         # if self.active:
         #     screen.blit(self.sprite, (self.loc_x * config.WIDGET_WIDTH, (self.loc_y+1) * config.WIDGET_HEIGHT))
@@ -131,11 +139,29 @@ class Widget:
 
     def check_break(self):
 
+        changed = False
+
         if self.state == Widget.CRACKED:
             self.state = Widget.BROKEN
+            changed = True
 
         if self.state == Widget.UNBROKEN:
             self.state = Widget.CRACKED
+            changed = True
+
+
+        if changed:
+            move_event = WidgetMoveEvent()
+            move_event.prev_x = self.loc_x
+            move_event.cur_x = self.loc_x
+            move_event.prev_y = self.loc_y
+            move_event.cur_y = self.loc_y
+            move_event.prev_active = self.active
+            move_event.cur_active = self.active
+            move_event.state = self.state
+            move_event.number = self.number
+
+            self.game_engine.evManager.Post(move_event)
 
         # if  self.cracked == True:
         #     self.cracked = False

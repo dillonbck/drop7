@@ -45,7 +45,6 @@ class GameEngine(object):
         self.game_over = False
 
         self.board = Board(self)
-        self.active_widget = Widget(self)
 
     def notify(self, event):
         """
@@ -70,8 +69,18 @@ class GameEngine(object):
 
             elif event.direction == MoveEvent.DIR_DOWN:
                 self.board.drop(self.active_widget)
-                self.board.widget_count += 1
 
+
+            move_event.cur_x = self.active_widget.loc_x
+            move_event.cur_y = self.active_widget.loc_y
+            move_event.cur_active = self.active_widget.active
+            move_event.state = self.active_widget.state
+            move_event.number = self.active_widget.number
+
+            self.evManager.Post(move_event)
+
+
+            if event.direction == MoveEvent.DIR_DOWN:
                 self.board.check()
 
                 self.board.check_game_over()
@@ -84,16 +93,7 @@ class GameEngine(object):
                 #logger.debug("widget_count: %d", self.board.widget_count)
                 self.board.print_board()
 
-            move_event.cur_x = self.active_widget.loc_x
-            move_event.cur_y = self.active_widget.loc_y
-            move_event.cur_active = self.active_widget.active
-            move_event.state = self.active_widget.state
-            move_event.number = self.active_widget.number
-
-            if event.direction == MoveEvent.DIR_DOWN:
                 self.active_widget = Widget(self)
-
-            self.evManager.Post(move_event)
 
 
 
@@ -105,6 +105,8 @@ class GameEngine(object):
         The loop ends when this object hears a QuitEvent in notify(). 
         """
         self.running = True
+        self.active_widget = Widget(self)
+
         self.evManager.Post(InitializeEvent())
         while self.running:
             newTick = TickEvent()

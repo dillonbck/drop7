@@ -52,6 +52,16 @@ class WidgetCreateEvent(Event):
         self.number = None
 
 
+
+class WidgetClearEvent(Event):
+
+    def __init__(self):
+        self.name = "Widget clear event"
+        self.active_widget = None
+        self.loc_x = None
+        self.loc_y = None
+
+
 class WidgetMoveEvent(Event):
     """
     Event for when a widget has moved.

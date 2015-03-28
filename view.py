@@ -70,6 +70,12 @@ class GraphicalView(object):
 
             self.draw_widget(active_widget, loc_x, loc_y, state, number)
 
+        elif isinstance(event, WidgetClearEvent):
+            active_widget = event.active_widget
+            loc_x = event.loc_x
+            loc_y = event.loc_y
+
+            self.clear_widget(active_widget, loc_x, loc_y)
 
             print("handling WidgetCreateEvent")
 
