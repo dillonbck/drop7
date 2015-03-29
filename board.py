@@ -1,7 +1,7 @@
 import logging
 import pygame
+from eventmanager import *
 
-import config
 
 from widget import Widget
 
@@ -10,57 +10,68 @@ logger = logging.getLogger(__name__)
 
 class Board:
 
-    def __init__(self):
+    def __init__(self, game_engine):
 
         self.arr = [[None for x in range(7)] for y in range(7)]
 
         self.widget_count = 0
 
+        self.game_engine = game_engine
+
     # Check to see if the widget at the specified location will be destroyed
     def check_cell(self, x, y):
+        if self.arr[y][x] is not None and self.arr[y][x].state == Widget.BROKEN:
+            logger.debug("\nnumber: %d", self.arr[y][x].number)
 
-        # If cell empty, return False
-        if self.arr[y][x] == None:
+            # Check horizontal widget removals
+            length = 1
+            i = x - 1
+            while i >= 0 and self.arr[y][i] != None:
+                length += 1
+                i -= 1
+            i = x + 1
+            while i <= 6 and self.arr[y][i] != None:
+                length += 1
+                i += 1
+
+            logger.debug("horizontal check:")
+            logger.debug("length == number?: %d == %d: %d", length, self.arr[y][x].number, length == self.arr[y][x].number)
+            #if self.arr[y][x].unbroken == False and self.arr[y][x].cracked == False and length == self.arr[y][x].number:
+            #if self.arr[y][x].state == Widget.BROKEN and length == self.arr[y][x].number:
+            if length == self.arr[y][x].number:
+                self.arr[y][x].remove()  # Destroy this widget
+                self.widget_count -= 1
+
+                # check if adjacent widgets are unbroken and if so crack them
+                self.check_adjacent(x, y)
+                #pygame.time.wait(1000)
+                return True
+
+            # Check vertical widget removals
+            i = y - 1
+            length = 1
+            while i >= 0 and self.arr[i][x] != None:
+                length += 1
+                i -= 1
+            i = y + 1
+            while i <= 6 and self.arr[i][x] != None:
+                length += 1
+                i += 1
+            logger.debug("vertical check:")
+            logger.debug("length == number?: %d == %d: %d", length, self.arr[y][x].number, length == self.arr[y][x].number)
+            #if self.arr[y][x].unbroken == False and self.arr[y][x].cracked == False and length == self.arr[y][x].number:
+            #if self.arr[y][x].state == Widget.BROKEN and length == self.arr[y][x].number:
+            if length == self.arr[y][x].number:
+                self.arr[y][x].remove()
+                self.widget_count -= 1
+
+                # check if adjacent widgets are unbroken and if so crack them
+                self.check_adjacent(x, y)
+                #pygame.time.wait(1000)
+                return True
+
+            pygame.time.wait(500)
             return False
-
-        # Check horizontal widget removals
-        length = 1
-        i = x - 1
-        while i >= 0 and self.arr[y][i] != None:
-            length += 1
-            i -= 1
-        i = x + 1
-        while i <= 6 and self.arr[y][i] != None:
-            length += 1
-            i += 1
-        if self.arr[y][x].unbroken == False and self.arr[y][x].cracked == False and length == self.arr[y][x].number:
-            self.arr[y][x].remove()  # Destroy this widget
-            self.widget_count -= 1
-
-            # check if adjacent widgets are unbroken and if so crack them
-            self.check_adjacent(x, y)
-            return True
-
-        # Check vertical widget removals
-        i = y - 1
-        length = 1
-        while i >= 0 and self.arr[i][x] != None:
-            length += 1
-            i -= 1
-        i = y + 1
-        while i <= 6 and self.arr[i][x] != None:
-            length += 1
-            i += 1
-        if self.arr[y][x].unbroken == False and self.arr[y][x].cracked == False and length == self.arr[y][x].number:
-            self.arr[y][x].remove()
-            self.widget_count -= 1
-
-            # check if adjacent widgets are unbroken and if so crack them
-            self.check_adjacent(x, y)
-            return True
-
-        #pygame.time.wait(20)
-        return False
 
     def check_adjacent(self, x, y):
         if x >= 1:
@@ -93,20 +104,14 @@ class Board:
                 widget.loc_y += 1         # Move down 1 spot
                 #self.draw()       # Redraw screen
 
-                widget.redraw(prev_y=widget.loc_y-1)
-
-                if config.use_gui:  
-                    pygame.time.wait(100)   
 
             self.arr[widget.loc_y][widget.loc_x] = widget    # Lock in the widget's position
             #self.clear()
-            prev_active = widget.active
             widget.active = 0     # Widget is now inactive
             #self.draw()       # Redraw screen
-            widget.redraw(prev_active=prev_active)
 
-            if config.use_gui:
-                pygame.time.wait(10)   
+            self.widget_count += 1
+
             return True
 
 
@@ -129,8 +134,22 @@ class Board:
                     myWidget.loc_y += 1
                     self.arr[yCopy + 1][x] = myWidget
                     self.arr[yCopy][x] = None
-                    #myWidget.draw()
-                    myWidget.redraw(prev_y=myWidget.loc_y-1)
+
+                    #myWidget.redraw(prev_y=myWidget.loc_y-1)
+
+                    move_event = WidgetMoveEvent()
+                    move_event.prev_x = x
+                    move_event.cur_x = x
+                    move_event.prev_y = yCopy
+                    move_event.cur_y = yCopy + 1
+                    move_event.prev_active = myWidget.active
+                    move_event.cur_active = myWidget.active
+                    move_event.state = myWidget.state
+                    move_event.number = myWidget.number
+
+                    self.game_engine.evManager.Post(move_event)
+
+
                     boardChanged = True
                     
                     widget = self.arr[yCopy+1]
@@ -141,8 +160,6 @@ class Board:
                     
 
         if boardChanged:
-            if config.use_gui:
-                pygame.time.wait(100)
             self.scoot()
             return True
         else:
@@ -155,20 +172,18 @@ class Board:
         for x in range(7):
             for y in range(7):
                 if self.arr[y][x] != None and self.arr[y][x].delete == 1:
-                    if config.combo_modifier > 0:
+                    if self.game_engine.combo_modifier > 0:
                         
-                        logger.debug("Combo %d\n\tScore += %d", config.combo_modifier, config.combo_list[config.combo_modifier])
+                        logger.debug("Combo %d\n\tScore += %d", self.game_engine.combo_modifier, self.game_engine.COMBO_LIST[self.game_engine.combo_modifier])
 
-                    config.score += config.combo_list[config.combo_modifier]
+                    self.game_engine.score += self.game_engine.COMBO_LIST[self.game_engine.combo_modifier]
 
                     boardChanged = True
                     self.arr[y][x].clear()
                     self.arr[y][x] = None
-                    if config.use_gui:
-                        pygame.time.wait(200)
 
         if boardChanged:
-            config.combo_modifier += 1
+            self.game_engine.combo_modifier += 1
         return boardChanged
     
 
@@ -182,21 +197,14 @@ class Board:
                 if self.check_cell(x, y) == True:
                     boardChanged = True
 
-        if config.use_gui:
-            pygame.time.wait(10)
-        if self.clean() == True:
-            boardChanged = True
-        if config.use_gui:
-            pygame.time.wait(10)
-        if self.scoot() == True:
-            boardChanged = True
-
-        if boardChanged == True:
+        if boardChanged:
+            self.clean()
+            self.scoot()
             self.check()
 
-        if config.combo_modifier > config.longest_combo:
-            config.longest_combo = config.combo_modifier
-        config.combo_modifier = 0
+        if self.game_engine.combo_modifier > self.game_engine.longest_combo:
+            self.game_engine.longest_combo = self.game_engine.combo_modifier
+        self.game_engine.combo_modifier = 0
 
             
     def add_unbroken_row(self):
@@ -210,11 +218,23 @@ class Board:
                     widget.loc_y -= 1
                     self.arr[y-1][x] = widget
                     self.arr[y][x] = None
-                    #widget.draw()
-                    widget.redraw(prev_y=widget.loc_y+1)
+
+                    #widget.redraw(prev_y=widget.loc_y+1)
+
+                    move_event = WidgetMoveEvent()
+                    move_event.prev_x = x
+                    move_event.cur_x = x
+                    move_event.prev_y = y
+                    move_event.cur_y = y - 1
+                    move_event.prev_active = widget.active
+                    move_event.cur_active = widget.active
+                    move_event.state = widget.state
+                    move_event.number = widget.number
+
+                    self.game_engine.evManager.Post(move_event)
 
         for x in range(7):
-            widget = Widget(True, x, 6)
+            widget = Widget(self.game_engine, True, x, 6)
             self.arr[6][x] = widget
 
         self.print_board()
@@ -222,17 +242,22 @@ class Board:
         self.check()
         self.widget_count += 7
 
-
     def level_check(self):
-        config.level_widgets_remaining -= 1
+        #config.level_widgets_remaining -= 1
+        self.game_engine.level_widgets_remaining -= 1
 
         # Finished level widgets, level up - add unbroken row
-        if config.level_widgets_remaining == 0:
-            config.level += 1
-            config.score += 7000
-            config.level_widgets_remaining = config.BASE_LEVEL_WIDGET_COUNT - config.level + 1
-            if config.level_widgets_remaining < config.MINIMUM_LEVEL_WIDGET_COUNT:
-                config.level_widgets_remaining += 1
+        #if config.level_widgets_remaining == 0:
+        if self.game_engine.level_widgets_remaining == 0:
+            self.game_engine.level += 1
+            self.game_engine.score += 7000
+            self.game_engine.level_widgets_remaining = self.game_engine.BASE_LEVEL_WIDGET_COUNT - self.game_engine.level + 1
+
+            #config.level += 1
+            #config.score += 7000
+            #config.level_widgets_remaining = self.game_engine.BASE_LEVEL_WIDGET_COUNT - config.level + 1
+            if self.game_engine.level_widgets_remaining < self.game_engine.MINIMUM_LEVEL_WIDGET_COUNT:
+                self.game_engine.level_widgets_remaining += 1
             #self.check_game_over(row_add=True)
             self.check_game_over(row_add=True)
             self.add_unbroken_row()
@@ -242,7 +267,8 @@ class Board:
         if row_add:
             for x in range(7):
                 if self.arr[0][x] is not None:
-                    config.game_over = True
+                    self.game_engine.game_over = True
+                    self.game_engine.running = False
         
         elif not row_add:
             top_row_full = True
@@ -251,10 +277,11 @@ class Board:
                     top_row_full = False
 
             if top_row_full:
-                config.game_over = True
+                self.game_engine.game_over = True
+                self.game_engine.running = False
 
-        if config.game_over:
-            logger.info("Game Over!\nScore: %d\nLevel: %d\nLongest Combo: %d", config.score, config.level, config.longest_combo)
+        if self.game_engine.game_over:
+            logger.info("Game Over!\nScore: %d\nLevel: %d\nLongest Combo: %d", self.game_engine.score, self.game_engine.level, self.game_engine.longest_combo)
 
 
 
@@ -263,9 +290,10 @@ class Board:
         for row in self.arr:
             for val in row:
                 if val is not None:
-                    logger.debug('{:4}'.format(val.number))
-                    #print '{:4}'.format(val.number),
+                    #logger.debug('{:4}'.format(val.number))
+                    print '{:4}'.format(val.number),
                 else:
-                    logger.debug('{:4}'.format(0))
-                    #print '{:4}'.format(0),
+                    #logger.debug('{:4}'.format(0))
+                    print '{:4}'.format(0),
+            print "\n"
 # end Board class
