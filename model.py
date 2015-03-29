@@ -105,9 +105,9 @@ class GameEngine(object):
         The loop ends when this object hears a QuitEvent in notify(). 
         """
         self.running = True
+        self.evManager.Post(InitializeEvent())
         self.active_widget = Widget(self)
 
-        self.evManager.Post(InitializeEvent())
         while self.running:
             newTick = TickEvent()
             self.evManager.Post(newTick)
