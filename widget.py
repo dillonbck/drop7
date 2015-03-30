@@ -1,3 +1,11 @@
+"""
+File: widget.py
+Author: Dillon Beck
+
+Classes:
+    Widget: Manages widget attributes.
+
+"""
 import logging
 import pygame
 from random import randint
@@ -5,36 +13,47 @@ import config
 from eventmanager import *
 
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-class Widget:
+class Widget(object):
+    """Widget class that manages breaking/cracking widgets and movement.
+
+    #TODO: loc_x and loc_y -> (loc_X, loc_y) or (row, column)
+
+    Attribute:
+        number: Int representing the number of the widget.
+        unbroken: Boolean indicating whether widget is unbroken.
+        cracked: Boolean indicating whether widget is cracked.
+        sprite: Sprite for the widget.
+        loc_x: Row the widget occupies.
+        loc_y: Column the widget occupies.
+        active: Whether the widget is the one being moved by the user.
+        delete: Whether the widget is deleted or not.
+    """
 
     UNBROKEN = 2
     CRACKED = 1
     BROKEN = 0
 
-    def __init__(self, game_engine, unbroken=False, x=0, y=0):
-        self.game_engine = game_engine
+    def __init__(self, game_engine, unbroken=False, row=0, column=0):
 
-        self.number = randint(1,7)
-        #self.number = 2
-        if unbroken or (randint(1,8) == 8):    # mostly broken
+        self.game_engine = game_engine
+        self.number = randint(1, 7)
+
+        if unbroken or (randint(1, 8) == 8):    # mostly broken
             self.state = Widget.UNBROKEN
 
             if config.use_gui:
                 self.sprite = config.icon_arr[7]
-            #self.number = 4
         else:
             self.state = Widget.BROKEN
             
             if config.use_gui:
                 self.sprite = config.icon_arr[self.number - 1]
-            #color = self.sprite.get_at((0,0))
-            #self.sprite.set_colorkey(color)
 
         if unbroken:
-            self.loc_x = x
-            self.loc_y = y
+            self.loc_x = row
+            self.loc_y = column
             self.active = 0
         else:
             self.loc_x = self.game_engine.DROP_X
@@ -42,71 +61,64 @@ class Widget:
             self.active = 1
 
         self.delete = 0
-        self.draw()
 
-        ev = WidgetCreateEvent()
-        ev.active_widget = self.active
-        ev.loc_x = self.loc_x
-        ev.loc_y = self.loc_y
-        ev.state = self.state
-        ev.number = self.number 
+        event = WidgetCreateEvent()
+        event.active_widget = self.active
+        event.loc_x = self.loc_x
+        event.loc_y = self.loc_y
+        event.state = self.state
+        event.number = self.number 
 
-        self.game_engine.evManager.Post(ev)
+        self.game_engine.evManager.Post(event)
 
     def clear(self):
-        # if self.active:
-        #     box = pygame.Rect(self.loc_x * config.WIDGET_WIDTH, (self.loc_y+1) * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
+        """Remove the widget from the screen.
 
-        # else:
-        #     box = pygame.Rect(self.loc_x * config.WIDGET_WIDTH, (self.loc_y+2) * config.WIDGET_HEIGHT, config.WIDGET_WIDTH-1, config.WIDGET_HEIGHT-1)
-        # pygame.draw.rect(config.BLACK, box, 0)
-        # #pygame.draw.rect(WHITE)
+        #TODO: This is gui stuff...
 
-        if config.use_gui:
-            config.gui.clear_widget(self.active, self.loc_x, self.loc_y)
+        """
 
-            pygame.display.flip()
+        event = WidgetClearEvent()
+        event.active_widget = self.active
+        event.loc_x = self.loc_x
+        event.loc_y = self.loc_y
 
-
-        ev = WidgetClearEvent()
-        ev.active_widget = self.active
-        ev.loc_x = self.loc_x
-        ev.loc_y = self.loc_y
-
-        self.game_engine.evManager.Post(ev)
-
-    def draw(self):
-        # if self.active:
-        #     screen.blit(self.sprite, (self.loc_x * config.WIDGET_WIDTH, (self.loc_y+1) * config.WIDGET_HEIGHT))
-        # else:
-        #     screen.blit(self.sprite, (self.loc_x * config.WIDGET_WIDTH, (self.loc_y+2) * config.WIDGET_HEIGHT))
-
-        if config.use_gui:
-            config.gui.draw_widget(self.sprite, self.active, self.loc_x, self.loc_y)
-
-            pygame.display.flip()
+        self.game_engine.evManager.Post(event)
 
 
     def right(self):
+        """Move the widget right 1 spot.
+
+        The widget will move right 1 spot, but its x location will not be 
+        greater than 7.
+
+        """
+
         if self.loc_x < 6 and self.active == 1:
-
-            #self.clear()
             self.loc_x += 1
-            #self.draw()
 
-            # self.redraw(prev_x=self.loc_x-1)
 
     def left(self):
+        """Move the widget left 1 spot.
+
+        The widget will move left 1 spot, but its x location will not be less
+        than 0.
+
+        """
+
         if self.loc_x >= 1 and self.active == 1:
-            #self.clear()
             self.loc_x -= 1
-            #self.draw()
 
             # self.redraw(prev_x=self.loc_x+1)
     
 
     # Mark a cell to be deleted
     def remove(self):
+        """Mark a widget as deleted.
+        #TODO: Should this even be a method?
+        #TODO: Should/can this be renamed to delete?
+        """
+
         self.delete = 1
 
         if config.use_gui:
@@ -138,6 +150,13 @@ class Widget:
 
 
     def check_break(self):
+        """Break or crack the widget.
+
+        Check if the widget is unbroken or cracked.  If unbroken, crack the 
+        widget.  If cracked, break the widget.  If broken, do nothing.
+        Updates the widget's sprite.
+
+        """
 
         changed = False
 
